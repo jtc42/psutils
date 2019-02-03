@@ -22,8 +22,8 @@ function sudo_do($parent_pid, $dir, $cmd) {
 	$kernel::attachconsole($parent_pid)
 		
 	$p = new-object diagnostics.process; $start = $p.startinfo
-	$start.filename = "pwsh.exe"
-	$start.arguments = "-noprofile -Command $cmd`nexit `$lastexitcode"
+	$start.filename = "powershell.exe"
+	$start.arguments = "-noprofile $cmd`nexit `$lastexitcode"
 	$start.useshellexecute = $false
 	$start.workingdirectory = $dir
 	$p.start()
@@ -42,7 +42,6 @@ function serialize($a, $escape) {
 
 if($args[0] -eq '-do') {
 	$null, $dir, $parent_pid, $cmd = $args
-    echo "-noprofile -Command $cmd`nexit `$lastexitcode"
 	$exit_code = sudo_do $parent_pid $dir (serialize $cmd)
 	exit $exit_code
 }
@@ -62,10 +61,9 @@ $wd = serialize (convert-path $pwd) # convert-path in case pwd is a PSDrive
 
 $savetitle = $host.ui.rawui.windowtitle
 $p = new-object diagnostics.process; $start = $p.startinfo
-$start.filename = "pwsh.exe"
-$start.arguments = "-noprofile -Command & '$pscommandpath' -do $wd $pid $a`nexit `$lastexitcode"
-$start.Verb = "RunAs"
-$start.UseShellExecute = $true
+$start.filename = "powershell.exe"
+$start.arguments = "-noprofile & '$pscommandpath' -do $wd $pid $a`nexit `$lastexitcode"
+$start.verb = 'runas'
 $start.windowstyle = 'hidden'
 try { $null = $p.start() }
 catch { exit 1 } # user didn't provide consent
